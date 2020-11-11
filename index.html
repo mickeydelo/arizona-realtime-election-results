@@ -87,9 +87,9 @@
       complete: function () {
         //Retrieve data from table by very specific selectors
         var trump =
-          "#csv-display > table > tbody:nth-child(2) > tr:nth-child(4) > td:nth-child(7)";
+          "#csv-display > table > tbody:nth-child(2) > tr:nth-child(7) > td:nth-child(7)";
         var biden =
-          "#csv-display > table > tbody:nth-child(2) > tr:nth-child(4) > td:nth-child(8)";
+          "#csv-display > table > tbody:nth-child(2) > tr:nth-child(7) > td:nth-child(8)";
 
         //Convert data to html
         $(trump).each(function () {
@@ -128,7 +128,7 @@
         $("#election-display").html(trumpOutput + bidenOutput);
 
         //Hide the CSV table
-        $("table").hide();
+        //$("table").hide();
       }
     });
 
