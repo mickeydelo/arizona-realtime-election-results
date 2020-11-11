@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="refresh" content="600" />
+    <meta
+      name="viewport"
+      content="width=device-width,user-scalable=no,initial-scale=1.0,maximum-scale=1.0"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="HandheldFriendly" content="true" />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="https://i.imgur.com/1uYNaM8.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="https://i.imgur.com/ZY5WRr3.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="https://i.imgur.com/74CZvSW.png"
+    />
+    <link rel="manifest" href="/src/favicon/site.webmanifest" />
+    <link
+      rel="mask-icon"
+      href="/src/favicon/safari-pinned-tab.svg"
+      color="#5bbad5"
+    />
+    <meta name="msapplication-TileColor" content="#da532c" />
+    <meta name="theme-color" content="#ffffff" />
+    <link rel="stylesheet" href="/src/styles.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fjalla+One&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-csv/0.71/jquery.csv-0.71.min.js"></script>
+    <title>Trump vs Biden - Forecast</title>
+  </head>
+  <body>
+    <div class="leader-bar"></div>
+    <div class="leader-bar-biden"></div>
+
+    <div class="container">
+      <div id="time-container"></div>
+      <div id="election-display"></div>
+      <div id="csv-display"></div>
+    </div>
+  </body>
+</html>
+
+<script type="text/javascript">
+  $(document).ready(function () {
+    var data;
+    var geturl;
+    //Get the CSV file from FiveThirtyEight
+    geturl = $.ajax({
+      type: "GET",
+      url:
+        "https://alex.github.io/nyt-2020-election-scraper/battleground-state-changes.csv",
+      dataType: "text",
+
+      success: function (response) {
+        //Convert CSV to Array with jquery-csv plugin
+        data = $.csv.toArrays(response);
+        generateHtmlTable(data);
+
+        //Get the server date of latest CSV
+        var timeStamp = geturl.getResponseHeader("Last-Modified");
+        var dateObj = new Date(timeStamp);
+        //Convert date to hh:mm format
+        var newDate = dateObj.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit"
+        });
+        //Write the date to the HTML
+        $("#time-container").text("Last Updated: " + newDate);
+      },
+
+      complete: function () {
+        //Retrieve data from table by very specific selectors
+        var trump =
+          "#csv-display > table > tbody:nth-child(2) > tr:nth-child(4) > td:nth-child(7)";
+        var biden =
+          "#csv-display > table > tbody:nth-child(2) > tr:nth-child(4) > td:nth-child(8)";
+
+        //Convert data to html
+        $(trump).each(function () {
+          trumpText = $(this).html();
+        });
+
+        $(biden).each(function () {
+          bidenText = $(this).html();
+        });
+
+        //Format HTML number to be whole number
+        //Trump
+        var n = (trumpText * 1).toFixed(1);
+        var p = n.replace("0", "");
+        var z = p.replace(".", "");
+        //Biden
+        var bidenFormat = Intl.NumberFormat().format(bidenText);
+        var trumpFormat = Intl.NumberFormat().format(trumpText);
+
+        //Write to HTML
+        var trumpOutput =
+          "<div class='trumpRender'>" +
+          "<span class='trumpName'>Biden Lead </span>" +
+          "<span class='trumpScore count'>" +
+          trumpFormat +
+          "</span>" +
+          "</div>";
+        var bidenOutput =
+          "<div class='bidenRender'>" +
+          "<span class='bidenName'>Votes Remaining </span>" +
+          "<span class='bidenScore count'>" +
+          bidenFormat +
+          "</span>" +
+          "</div>";
+
+        $("#election-display").html(trumpOutput + bidenOutput);
+
+        //Hide the CSV table
+        $("table").hide();
+      }
+    });
+
+    //Convert CSV to HTML table
+    function generateHtmlTable(data) {
+      var html =
+        '<table  class="table table-condensed table-hover table-striped">';
+
+      if (typeof data[0] === "undefined") {
+        return null;
+      } else {
+        $.each(data, function (index, row) {
+          //bind header
+          if (index == 0) {
+            html += "<tr>";
+
+            html += "</tr>";
+            html += "<tbody>";
+          } else {
+            html += "<tr>";
+            $.each(row, function (index, colData) {
+              html += "<td>";
+              html += colData;
+              html += "</td>";
+            });
+            html += "</tr>";
+          }
+        });
+        html += "</tbody>";
+        html += "</table>";
+        $("#csv-display").append(html);
+      }
+    }
+  });
+</script>
